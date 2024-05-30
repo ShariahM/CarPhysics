@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Timer;
 import javax.swing.JPanel;
+import java.lang.Math;
 
 public class CrashPanel extends JPanel implements ActionListener{
     public Car carA;
@@ -25,11 +26,11 @@ public class CrashPanel extends JPanel implements ActionListener{
         car.x += car.velocity*Math.cos(rad);
         car.y -= car.velocity*Math.sin(rad);
         if(outsideXBounds(car)){
-            car.x = Math.clamp(car.x, 0, getWidth()-carLength);
+            car.x = car.x<0 ? 0: car.x>getWidth()-carLength?getWidth()-carLength:car.x;
             car.angle = Math.toDegrees(Math.PI-rad);
         }
         if(outsideYBounds(car)){
-            car.y = Math.clamp(car.y, 0, getHeight()-carWidth);
+            car.y = car.y<0 ? 0: car.y>getHeight()-carWidth?getHeight()-carWidth:car.y;
             car.angle = Math.toDegrees(Math.PI*2-Math.toRadians(car.angle));
         }
     }
@@ -41,8 +42,12 @@ public class CrashPanel extends JPanel implements ActionListener{
         return ((car2.y+carWidth >= topBound && car2.y<=bottomBound) && (car2.x+carLength >= leftBound && car2.x<=rightBound));
     }
 
-    public void applyCollision(){
-        double coefficientOfRestituition = 0.5;
+    public void applyCollision(Car carA, Car carB){
+        double e = 0.5;
+        double m1 = carA.mass;
+        double m2 = carB.mass;
+        double v1 = carA.velocity;
+        double v2 = carB.velocity;
         
     }
 
@@ -59,7 +64,7 @@ public class CrashPanel extends JPanel implements ActionListener{
             updateMotion(carA);
             updateMotion(carB);
             if(isColliding(carB, carA)){
-
+                System.out.println("colliding");
             }
         }else if(source == paintTimer){
             repaint();
