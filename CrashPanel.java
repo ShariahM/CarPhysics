@@ -11,15 +11,15 @@ public class CrashPanel extends JPanel implements ActionListener{
     public Car carB;
     int carWidth = 50;
     int carLength = 100;
-    int debounce = 0;
+    boolean collided;
     Timer paintTimer;
     Timer movementTimer;
     public CrashPanel(){
-        carA = new Car();
-        carB = new Car(0,10,10,90);
+        carA = new Car(0,7,20,55);
+        carB = new Car(0,10,10,125);
         paintTimer = new Timer(16, this);
         paintTimer.start(); 
-        movementTimer = new Timer(5, this);
+        movementTimer = new Timer(100, this);
         movementTimer.start(); 
     }
     public void updateMotion(Car car){
@@ -44,7 +44,6 @@ public class CrashPanel extends JPanel implements ActionListener{
     }
 
     public void applyCollision(Car carA, Car carB){
-        debounce = 100;
         double e = 0.5;
         double mA = carA.mass;
         double mB = carB.mass;
@@ -119,10 +118,10 @@ public class CrashPanel extends JPanel implements ActionListener{
         if(source == movementTimer){ 
             updateMotion(carA);
             updateMotion(carB);
-            if(isColliding(carB, carA) && debounce<=0){
+            if(isColliding(carB, carA)){
                 applyCollision(carA, carB);
+                collided = true;
             }
-            debounce--;
         }else if(source == paintTimer){
             repaint();
         }

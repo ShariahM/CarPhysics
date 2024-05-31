@@ -8,6 +8,7 @@ public class CrashMain {
         frame.setSize(600,400);
         frame.setVisible(true);
         carPane.carA.y = carPane.getHeight()-50;
+        carPane.carA.x = carPane.getWidth()-100;
     }
     public static void main(String[] args) {
         new CrashMain(); 
