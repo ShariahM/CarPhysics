@@ -11,6 +11,7 @@ public class CrashPanel extends JPanel implements ActionListener{
     public Car carB;
     int carWidth = 50;
     int carLength = 100;
+    int debounce = 0;
     Timer paintTimer;
     Timer movementTimer;
     public CrashPanel(){
@@ -43,14 +44,69 @@ public class CrashPanel extends JPanel implements ActionListener{
     }
 
     public void applyCollision(Car carA, Car carB){
+        debounce = 100;
         double e = 0.5;
-        double m1 = carA.mass;
-        double m2 = carB.mass;
-        double v1 = carA.velocity;
-        double v2 = carB.velocity;
-        
+        double mA = carA.mass;
+        double mB = carB.mass;
+        double vIAx = carA.velocity*Math.cos(Math.toRadians(carA.angle));
+        double vIBx = carB.velocity*Math.cos(Math.toRadians(carB.angle));
+        double vFAx = (mA*vIAx + mB*vIBx - e*mB*(vIAx - vIBx))/(mA+mB);
+        double vFBx = vFAx + e*(vIAx - vIBx);
+
+        double vIAy = carA.velocity*Math.sin(Math.toRadians(carA.angle));
+        double vIBy = carB.velocity*Math.sin(Math.toRadians(carB.angle));
+        double vFAy = (mA*vIAy + mB*vIBy - e*mB*(vIAy - vIBy))/(mA+mB);
+        double vFBy = vFAy + e*(vIAy - vIBy);
+
+        carA.velocity = Math.sqrt(Math.pow(vFAy, 2) + Math.pow(vFAx, 2));
+        carA.angle = Math.toDegrees(Math.atan2(vFAy, vFAx));
+
+        carB.velocity = Math.sqrt(Math.pow(vFBy, 2) + Math.pow(vFBx, 2));
+        carB.angle = Math.toDegrees(Math.atan2(vFBy, vFBx)); 
+        System.out.println(carA.velocity);
+        System.out.println(carB.velocity);
+        System.out.println(carA.velocity + carB.velocity);
+        System.out.println("------------------");
+            System.out.println("Total momentum: " + (carA.velocity*carA.mass + carB.velocity*carB.mass));
+            System.out.println("------------------");
     }
 
+    // public void applyCollision(Car carA, Car carB){
+    //     debounce = 100;
+    //     // Define the coefficient of restitution for the inelastic collision
+    //     double e = 0.2;
+    
+    //     // Masses of the cars
+    //     double mA = carA.mass;
+    //     double mB = carB.mass;
+    
+    //     // Initial velocities along the x-axis
+    //     double vIAx = carA.velocity * Math.cos(Math.toRadians(carA.angle));
+    //     double vIBx = carB.velocity * Math.cos(Math.toRadians(carB.angle));
+    
+    //     // Final velocities along the x-axis after collision
+    //     double vFAx = (mA * vIAx + mB * vIBx - e * mB * (vIAx - vIBx)) / (mA + mB);
+    //     double vFBx = vFAx - e * (vIAx - vIBx);
+    
+    //     // Initial velocities along the y-axis
+    //     double vIAy = carA.velocity * Math.sin(Math.toRadians(carA.angle));
+    //     double vIBy = carB.velocity * Math.sin(Math.toRadians(carB.angle));
+    
+    //     // Final velocities along the y-axis after collision
+    //     double vFAy = (mA * vIAy + mB * vIBy - e * mB * (vIAy - vIBy)) / (mA + mB);
+    //     double vFBy = vFAy - e * (vIAy - vIBy);
+    
+    //     // Update the velocities and angles of carA
+    //     carA.velocity = Math.sqrt(Math.pow(vFAy, 2) + Math.pow(vFAx, 2));
+    //     carA.angle = Math.toDegrees(Math.atan2(vFAy, vFAx));
+    
+    //     // Update the velocities and angles of carB
+    //     carB.velocity = Math.sqrt(Math.pow(vFBy, 2) + Math.pow(vFBx, 2));
+    //     carB.angle = Math.toDegrees(Math.atan2(vFBy, vFBx));
+    
+    //     // Print the results
+
+    // }
     public boolean outsideXBounds(Car car){
         return car.x <=0 || car.x+carLength >= getWidth();
     }
@@ -63,9 +119,10 @@ public class CrashPanel extends JPanel implements ActionListener{
         if(source == movementTimer){ 
             updateMotion(carA);
             updateMotion(carB);
-            if(isColliding(carB, carA)){
-                System.out.println("colliding");
+            if(isColliding(carB, carA) && debounce<=0){
+                applyCollision(carA, carB);
             }
+            debounce--;
         }else if(source == paintTimer){
             repaint();
         }
