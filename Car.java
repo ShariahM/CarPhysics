@@ -7,12 +7,15 @@ class Car {
     public double y;
     public int width;
     public int length;
+    public double angularVelocity = 0;
+    public double targetAngle;
 
     public Car(double initialVelocity, double velocity, double mass, double angle, int width, int length){
         this.initialVelocity = initialVelocity;
         this.velocity = velocity;
         this.mass = mass;
         this.angle = angle;
+        targetAngle = angle;
         this.width = width;
         this.length = length;
         x = 0;

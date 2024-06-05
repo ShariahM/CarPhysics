@@ -32,7 +32,9 @@ public class CrashMain implements ActionListener{
             carA.x = carPane.getWidth()/2;
             carB.y = carPane.getHeight()/2;
             carB.x = 0;
+            carA.targetAngle = 270;
             carA.angle = 270;
+            carB.targetAngle = 0;
             carB.angle = 0;
             carA.velocity = carA.initialVelocity;
             carB.velocity = carB.initialVelocity;
