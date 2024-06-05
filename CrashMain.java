@@ -38,6 +38,8 @@ public class CrashMain implements ActionListener{
             carB.angle = 0;
             carA.velocity = carA.initialVelocity;
             carB.velocity = carB.initialVelocity;
+            carA.updatePoly();
+            carB.updatePoly();
             carPane.movementTimer.restart();
         }
     }

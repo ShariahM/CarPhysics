@@ -1,13 +1,13 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Rectangle2D;
+
 import javax.swing.Timer;
 import javax.swing.JPanel;
 import java.lang.Math;
-import java.util.Arrays;
 
 public class CrashPanel extends JPanel implements ActionListener{
     public Car carA;
@@ -21,8 +21,6 @@ public class CrashPanel extends JPanel implements ActionListener{
     public CrashPanel(){
         carA = new Car(500,1000,8,270, 50, 100);
         carB = new Car(600,1552,10,0, 50, 100);
-        //paintTimer = new Timer(16, this);
-        //paintTimer.start(); 
         movementTimer = new Timer(movementTickRate, this);
     }
     public void updateMotion(Car car){
@@ -40,7 +38,7 @@ public class CrashPanel extends JPanel implements ActionListener{
             double angleDifference = car.targetAngle - car.angle;
             System.out.println(angleDifference);
             if (Math.abs(angleDifference) < 3) {
-                car.angle = car.targetAngle; // Directly set to target if close enough
+                car.angle = car.targetAngle; 
             } else {
                 if(Math.abs(angleDifference)>180){
                     car.angle+=3;
@@ -49,33 +47,18 @@ public class CrashPanel extends JPanel implements ActionListener{
                 }
             }
         }
+        car.updatePoly();
         if(isColliding(carA, carB) && debounce<0){
             car.x = oldX;
             car.y = oldY;
             applyCollision(carA, carB);
         }
-
+        
     }
     public boolean isColliding(Car car1, Car car2) {
-        double car1HalfLength = car1.width / 2.0; 
-        double car1HalfWidth = car1.length / 2.0;  
-        double car2HalfLength = car2.width / 2.0;  
-        double car2HalfWidth = car2.length / 2.0; 
-    
-        double car1Left = car1.x - car1HalfWidth;
-        double car1Right = car1.x + car1HalfWidth;
-        double car1Top = car1.y - car1HalfLength;
-        double car1Bottom = car1.y + car1HalfLength;
-    
-        double car2Left = car2.x - car2HalfWidth;
-        double car2Right = car2.x + car2HalfWidth;
-        double car2Top = car2.y - car2HalfLength;
-        double car2Bottom = car2.y + car2HalfLength;
-    
-        boolean isCollidingHorizontally = car1Left < car2Right && car1Right > car2Left;
-        boolean isCollidingVertically = car1Top < car2Bottom && car1Bottom > car2Top;
-    
-        return isCollidingHorizontally && isCollidingVertically;
+        Rectangle2D car1Area = car1.rect.getBounds2D();
+        Rectangle2D car2Area = car2.rect.getBounds2D();
+        return !car1Area.createIntersection(car2Area).isEmpty();
     }
 
     public void applyCollision(Car carA, Car carB){
@@ -125,74 +108,9 @@ public class CrashPanel extends JPanel implements ActionListener{
         Graphics2D g2d = (Graphics2D)g;
         super.paintComponent(g2d);
         g2d.setColor(Color.red);
-        double radians = Math.toRadians(180 - carA.angle);
         
-        double centerX = carA.x;
-        double centerY = carA.y;
-        // Calculate half dimensions
-        double halfWidth = carA.length / 2.0;
-        double halfHeight = carA.width / 2.0;
-        
-        // Calculate the coordinates of the corners relative to the center
-        double[] xPoints = new double[4];
-        double[] yPoints = new double[4];
-        
-        xPoints[0] = centerX - halfWidth;
-        yPoints[0] = centerY - halfHeight;
-        
-        xPoints[1] = centerX + halfWidth;
-        yPoints[1] = centerY - halfHeight;
-        
-        xPoints[2] = centerX + halfWidth;
-        yPoints[2] = centerY + halfHeight;
-        
-        xPoints[3] = centerX - halfWidth;
-        yPoints[3] = centerY + halfHeight;
-        
-        // Rotate the coordinates around the center
-        int[] xRotatedPoints = new int[4];
-        int[] yRotatedPoints = new int[4];
-        
-        for (int i = 0; i < 4; i++) {
-            double xRotated = centerX + (xPoints[i] - centerX) * Math.cos(radians) - (yPoints[i] - centerY) * Math.sin(radians);
-            double yRotated = centerY + (xPoints[i] - centerX) * Math.sin(radians) + (yPoints[i] - centerY) * Math.cos(radians);
-            xRotatedPoints[i] = (int) Math.round(xRotated);
-            yRotatedPoints[i] = (int) Math.round(yRotated);
-        }
-        Polygon polygon = new Polygon(xRotatedPoints, yRotatedPoints, 4);
-        g2d.fillPolygon(polygon);
-        centerX = carB.x;
-        centerY = carB.y;
-        radians = Math.toRadians(180 - carB.angle);
-        xPoints = new double[4];
-        yPoints = new double[4];
-        
-        xPoints[0] = centerX - halfWidth;
-        yPoints[0] = centerY - halfHeight;
-        
-        xPoints[1] = centerX + halfWidth;
-        yPoints[1] = centerY - halfHeight;
-        
-        xPoints[2] = centerX + halfWidth;
-        yPoints[2] = centerY + halfHeight;
-        
-        xPoints[3] = centerX - halfWidth;
-        yPoints[3] = centerY + halfHeight;
-        
-        // Rotate the coordinates around the center
-        xRotatedPoints = new int[4];
-        yRotatedPoints = new int[4];
-        
-        for (int i = 0; i < 4; i++) {
-            double xRotated = centerX + (xPoints[i] - centerX) * Math.cos(radians) - (yPoints[i] - centerY) * Math.sin(radians);
-            double yRotated = centerY + (xPoints[i] - centerX) * Math.sin(radians) + (yPoints[i] - centerY) * Math.cos(radians);
-            xRotatedPoints[i] = (int) Math.round(xRotated);
-            yRotatedPoints[i] = (int) Math.round(yRotated);
-        }
-        polygon = new Polygon(xRotatedPoints, yRotatedPoints, 4);
-        g2d.fillPolygon(polygon);
-
-
-        
+        g2d.fillPolygon(carA.rect);
+        g2d.setColor(Color.BLUE);
+        g2d.fillPolygon(carB.rect);  
     }
 }
