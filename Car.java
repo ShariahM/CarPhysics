@@ -1,26 +1,50 @@
-import java.util.ArrayList;
-
+import java.awt.Polygon;
 public class Car {
-    ArrayList<Vector> translationalForces = new ArrayList<Vector>();
-    public static void main(String[] args) {
-        Car c = new Car();
-        Vector v = new Vector(-3, -4);
-        c.addTranslationalForce(v);
-        c.getNetForce();
-
+    double velocity = 0;
+    double targetVelocity = 0;
+    double angularVelocity = 0;
+    double targetAngle = 0;
+    double acceleration = 0;
+    double mass = Math.random()*250+1000;
+    double angle = 0;
+    Polygon rect = new Polygon();
+    double x = 0;
+    double y = 0;
+    double height = 50;
+    double width = 100;
+    public Car(double x, double y, double angle, double velocity){
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+        this.targetAngle = angle;
+        this.velocity = velocity;
+        targetVelocity = velocity;
+        updateRectangle();
     }
-    public void addTranslationalForce(Vector force){
-        translationalForces.add(force);
-    }
-    public Vector getNetForce(){
-        double finalXComponent = 0;
-        double finalYComponent = 0;
-        for (Vector vector : translationalForces) {
-            finalXComponent+=vector.xComponent;
-            finalYComponent+=vector.yComponent;
+    public void updateRectangle(){
+        double angle = this.angle+Math.PI;
+        rect.reset();
+        double[] xPoints = new double[4];
+        double[] yPoints = new double[4];
+        double halfWidth = width/2;
+        double halfHeight = height/2;
+        
+        xPoints[0] = x - halfWidth;
+        yPoints[0] = y - halfHeight;
+        
+        xPoints[1] = x + halfWidth;
+        yPoints[1] = y - halfHeight;
+        
+        xPoints[2] = x + halfWidth;
+        yPoints[2] = y + halfHeight;
+        
+        xPoints[3] = x - halfWidth;
+        yPoints[3] = y + halfHeight;
+        
+        for (int i = 0; i < 4; i++) {
+            double xRotated = x + (xPoints[i] - x) * Math.cos(angle) - (yPoints[i] - y) * Math.sin(angle);
+            double yRotated = y + (xPoints[i] - x) * Math.sin(angle) + (yPoints[i] - y) * Math.cos(angle);
+            rect.addPoint((int) Math.round(xRotated), (int) Math.round(yRotated));
         }
-        double angle = Math.atan2(finalYComponent, finalXComponent);
-        System.out.println(Math.toDegrees(angle));
-        return new Vector(finalXComponent, finalYComponent, angle);
     }
 }

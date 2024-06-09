@@ -9,38 +9,31 @@ public class CrashMain implements ActionListener{
     CrashPanel carPane = new CrashPanel();
     JPanel overlay = new JPanel();
     JButton launch = new JButton("Launch");
+    JButton reset = new JButton("Reset");
     public CrashMain(){
         frame.setContentPane(carPane);
         frame.setGlassPane(overlay);
         launch.addActionListener(this);
+        reset.addActionListener(this);
         overlay.add(launch);
+        overlay.add(reset);
         overlay.setOpaque(false);
         overlay.setVisible(true);
-        frame.setSize(600,400);
+        frame.setSize(1200,800);
         frame.setVisible(true);
-
-
+        carPane.intersectionPolygon.addPoint(carPane.getWidth()/2-carPane.laneWidth*carPane.lanes, carPane.getHeight()/2-carPane.laneWidth*carPane.lanes);
+        carPane.intersectionPolygon.addPoint(carPane.getWidth()/2+carPane.laneWidth*carPane.lanes, carPane.getHeight()/2-carPane.laneWidth*carPane.lanes);
+        carPane.intersectionPolygon.addPoint(carPane.getWidth()/2+carPane.laneWidth*carPane.lanes, carPane.getHeight()/2+carPane.laneWidth*carPane.lanes);
+        carPane.intersectionPolygon.addPoint(carPane.getWidth()/2-carPane.laneWidth*carPane.lanes, carPane.getHeight()/2+carPane.laneWidth*carPane.lanes);
     }
     public static void main(String[] args) {
         new CrashMain(); 
     }
     public void actionPerformed(ActionEvent e){
         if (e.getSource() == launch){
-            Car carA = carPane.carA;
-            Car carB = carPane.carB;
-            carA.y = 0;
-            carA.x = carPane.getWidth()/2;
-            carB.y = carPane.getHeight()/2;
-            carB.x = 0;
-            carA.targetAngle = 270;
-            carA.angle = 270;
-            carB.targetAngle = 0;
-            carB.angle = 0;
-            carA.velocity = carA.initialVelocity;
-            carB.velocity = carB.initialVelocity;
-            carA.updatePoly();
-            carB.updatePoly();
-            carPane.movementTimer.restart();
+            carPane.addCars();
+        }else if(e.getSource() == reset){
+            carPane.reset();
         }
     }
 }
