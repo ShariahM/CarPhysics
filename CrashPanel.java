@@ -15,6 +15,7 @@ public class CrashPanel extends JPanel implements ActionListener{
     int xTrafficLevel = 1;
     int yTrafficLevel = 1;
     int trafficLight = 1; // 1 VGreen - 2 VYellow - 3HGreen - 4 HYellow
+    int speedLimit = 3;
     ArrayList<Car>[] yTraffic = new ArrayList[lanes*2]; 
     ArrayList<Car>[] xTraffic = new ArrayList[lanes*2]; 
     Polygon intersectionPolygon = new Polygon();
@@ -33,14 +34,25 @@ public class CrashPanel extends JPanel implements ActionListener{
             xTraffic[i] = new ArrayList<Car>(); 
         } 
     }
+
+    public double randomVelocity(ArrayList<Car> lane){
+        double speed = Math.random()+speedLimit;
+        if (lane.size() == 0){
+            return speed;
+        }else{
+            return Math.min(lane.getLast().targetVelocity, speed);
+        }
+    }
+
     public void addCars(){
         for(int i = 0; i<lanes*2;i++){
             boolean negative = i<lanes;
             for(int j = 0; j<yTrafficLevel; j++){
-                yTraffic[i].add(new Car(getWidth()/2-laneWidth*lanes+laneWidth*i+laneWidth/2, negative?-100*yTraffic[i].size():getHeight()+yTraffic[i].size()*100, Math.toRadians(negative?270:90), Math.random()+1));
+                
+                yTraffic[i].add(new Car(getWidth()/2-laneWidth*lanes+laneWidth*i+laneWidth/2, negative?-125*yTraffic[i].size():getHeight()+yTraffic[i].size()*125, Math.toRadians(negative?270:90), randomVelocity(yTraffic[i])));
             }
             for(int j = 0; j<xTrafficLevel; j++){
-                xTraffic[i].add(new Car(!negative?-100*xTraffic[i].size():getWidth()+100*xTraffic[i].size(), getHeight()/2-laneWidth*lanes+laneWidth*i+laneWidth/2, Math.toRadians(negative?180:0), Math.random()+1));
+                xTraffic[i].add(new Car(!negative?-125*xTraffic[i].size():getWidth()+125*xTraffic[i].size(), getHeight()/2-laneWidth*lanes+laneWidth*i+laneWidth/2, Math.toRadians(negative?180:0), randomVelocity(xTraffic[i])));
             }
         }
     }
@@ -59,34 +71,25 @@ public class CrashPanel extends JPanel implements ActionListener{
         car.velocity += car.acceleration;
         car.x += Math.cos(car.angle)*car.velocity;
         car.y -= Math.sin(car.angle)*car.velocity;
-        if (car.angle != car.targetAngle) {
-            double angleDifference = car.targetAngle - car.angle;
-            System.out.println(car.angle);
-            if (Math.abs(angleDifference) < Math.toRadians(4)) {
-                car.angle = car.targetAngle;
-            } else {
-                if(Math.abs(angleDifference)>Math.toRadians(180)){
-                    car.angle-=Math.toRadians(3);
-                }else if(Math.abs(angleDifference)<Math.toRadians(180)){
-                    car.angle+=Math.toRadians(3);
-                }
-            }
-        }
-
     }
 
-    public void yellowLight(Car car, int index){
+    public void yellowLight(Car car, ArrayList<Car> lane){
+        int index = lane.indexOf(car);
+
         if(car.angle == Math.toRadians(0)){
-            if(car.x<getWidth()/2-laneWidth*lanes-(car.width/2+25)*index-25 && car.x>getWidth()/2-laneWidth*lanes-(car.width/2+25)*(index+1)){
+            if(car.x<getWidth()/2-laneWidth*lanes-(car.width+25)*index-25 && car.x>getWidth()/2-laneWidth*lanes-(car.width+25)*(index+1)){
                 car.velocity = 0;
             }else if(!car.rect.getBounds2D().createIntersection(intersectionPolygon.getBounds2D()).isEmpty()){
+                System.out.println("intersection!");
+                lane.remove(car);
+                lane.add(car);
                 car.velocity = car.targetVelocity*1.5;
             }else{
                 car.velocity = car.targetVelocity;
             }
         }
         if(car.angle == Math.toRadians(180)){
-            if(car.x>getWidth()/2+laneWidth*lanes+(car.width/2+25)*index+25 && car.x<getWidth()/2+laneWidth*lanes+(car.width/2+25)*(index+1)){
+            if(car.x>getWidth()/2+laneWidth*lanes+(car.width+25)*index+25 && car.x<getWidth()/2+laneWidth*lanes+(car.width+25)*(index+1)){
                 car.velocity = 0;
             }else if(!car.rect.getBounds2D().createIntersection(intersectionPolygon.getBounds2D()).isEmpty()){
                 car.velocity = car.targetVelocity*1.5;
@@ -95,7 +98,7 @@ public class CrashPanel extends JPanel implements ActionListener{
             }
         }
         if(car.angle == Math.toRadians(90)){
-            if(car.y>getHeight()/2+laneWidth*lanes+(car.height/2+25)*index+25 && car.y<getHeight()/2+laneWidth*lanes+(car.height/2+25)*(index+1)+25){
+            if(car.y>getHeight()/2+laneWidth*lanes+(car.width+25)*index+25 && car.y<getHeight()/2+laneWidth*lanes+(car.width+25)*(index+1)){
                 car.velocity = 0;
             }else if(!car.rect.getBounds2D().createIntersection(intersectionPolygon.getBounds2D()).isEmpty()){
                 car.velocity = car.targetVelocity*1.5;
@@ -104,7 +107,7 @@ public class CrashPanel extends JPanel implements ActionListener{
             }
         }
         if(car.angle == Math.toRadians(270)){
-            if(car.y<getHeight()/2-laneWidth*lanes-(car.height/2+25)*index-25 && car.y>getHeight()/2-laneWidth*lanes-(car.height/2+25)*(index+1)-25){
+            if(car.y<getHeight()/2-laneWidth*lanes-(car.width+25)*index-25 && car.y>getHeight()/2-laneWidth*lanes-(car.width+25)*(index+1)){
                 car.velocity = 0;
             }else if(!car.rect.getBounds2D().createIntersection(intersectionPolygon.getBounds2D()).isEmpty()){
                 car.velocity = car.targetVelocity*1.5;
@@ -151,21 +154,19 @@ public class CrashPanel extends JPanel implements ActionListener{
         double vFBy = vFAy + e*(vIAy - vIBy);
 
         carA.velocity = Math.sqrt(Math.pow(vFAy, 2) + Math.pow(vFAx, 2));
-        carA.targetAngle = Math.atan2(vFAy, vFAx);
+        carA.angle = Math.atan2(vFAy, vFAx);
 
         carB.velocity = Math.sqrt(Math.pow(vFBy, 2) + Math.pow(vFBx, 2));
-        carB.targetAngle = Math.atan2(vFBy, vFBx); 
+        carB.angle = Math.atan2(vFBy, vFBx); 
         carCollidedB = carB;
         carCollidedA = carA;
+        trafficTimer.stop();
     }
 
     public void actionPerformed(ActionEvent e){
         Object source = e.getSource();
         if(source == movementTimer){
             if(carCollidedA != null  && carCollidedB != null){
-                System.out.println("Already collided");
-                System.out.println(carCollidedA.velocity);
-                System.out.println(carCollidedB.velocity);
                 applyMotion(carCollidedA);
                 applyMotion(carCollidedB);
                 carCollidedA.updateRectangle();
@@ -180,15 +181,19 @@ public class CrashPanel extends JPanel implements ActionListener{
                         car.velocity = car.targetVelocity;
                         applyMotion(car);
                         if(car.y<0 && car.angle == Math.toRadians(90)){
-                            car.y = getHeight()+(car.height*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
+                            car.y = getHeight()+(car.width+25)*j;
+                            double speed = randomVelocity(yTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             yTraffic[i].remove(car);
                             yTraffic[i].add(car);
                         }else if(car.y+car.height/2>getHeight() && car.angle == Math.toRadians(270)){
-                            car.y = 0-(car.height*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
+                            car.y = -(car.width+25)*yTraffic[i].size();
+                            double speed = randomVelocity(yTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             yTraffic[i].remove(car);
                             yTraffic[i].add(car);
                         }
@@ -200,20 +205,24 @@ public class CrashPanel extends JPanel implements ActionListener{
                     }
                     for(int j=0; j<xTraffic[i].size(); j++){
                         Car car = xTraffic[i].get(j);
-                        yellowLight(car, j);
+                        yellowLight(car, xTraffic[i]);
                         applyMotion(car);
                         if(car.x<0 && car.angle == Math.toRadians(180)){
                             car.x = getWidth()+(car.width*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
-                            xTraffic[i].remove(car);
+                            double speed = randomVelocity(xTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             xTraffic[i].add(car);
+                            xTraffic[i].remove(car);
                         }else if(car.x+car.width/2>getWidth() && car.angle == Math.toRadians(0)){
                             car.x = 0-(car.width*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
-                            xTraffic[i].remove(car);
+                            double speed = randomVelocity(xTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             xTraffic[i].add(car);
+                            xTraffic[i].remove(car);
                         }
                         car.updateRectangle();
                         Car colliding = isColliding(car);
@@ -225,18 +234,22 @@ public class CrashPanel extends JPanel implements ActionListener{
                 if(trafficLight == 3){
                     for(int j=0; j<yTraffic[i].size(); j++){
                         Car car = yTraffic[i].get(j);
-                        yellowLight(car, j);
+                        yellowLight(car, yTraffic[i]);
                         applyMotion(car);
                         if(car.y<0 && car.angle == Math.toRadians(90)){
-                            car.y = getHeight()+(car.height*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
+                            car.y = getHeight()+(car.width+25)*j;
+                            double speed = randomVelocity(yTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             yTraffic[i].remove(car);
                             yTraffic[i].add(car);
                         }else if(car.y+car.height/2>getHeight() && car.angle == Math.toRadians(270)){
-                            car.y = 0-(car.height*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
+                            car.y = -(car.width+25)*j;
+                            double speed = randomVelocity(yTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             yTraffic[i].remove(car);
                             yTraffic[i].add(car);
                         }
@@ -252,16 +265,20 @@ public class CrashPanel extends JPanel implements ActionListener{
                         applyMotion(car);
                         if(car.x<0 && car.angle == Math.toRadians(180)){
                             car.x = getWidth()+(car.width*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
-                            xTraffic[i].remove(car);
+                            double speed = randomVelocity(xTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             xTraffic[i].add(car);
+                            xTraffic[i].remove(car);
                         }else if(car.x+car.width/2>getWidth() && car.angle == Math.toRadians(0)){
                             car.x = 0-(car.width*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
-                            xTraffic[i].remove(car);
+                            double speed = randomVelocity(xTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             xTraffic[i].add(car);
+                            xTraffic[i].remove(car);
                         }
                         car.updateRectangle();
                         Car colliding = isColliding(car);
@@ -273,18 +290,22 @@ public class CrashPanel extends JPanel implements ActionListener{
                 if(trafficLight == 2 || trafficLight == 4){
                     for(int j=0; j<yTraffic[i].size(); j++){
                         Car car = yTraffic[i].get(j);
-                        yellowLight(car, j);
+                        yellowLight(car, yTraffic[i]);
                         applyMotion(car);
                         if(car.y<0 && car.angle == Math.toRadians(90)){
-                            car.y = getHeight()+(car.height*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
+                            car.y = getHeight()+(car.width+25)*j;
+                            double speed = randomVelocity(yTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             yTraffic[i].remove(car);
                             yTraffic[i].add(car);
                         }else if(car.y+car.height/2>getHeight() && car.angle == Math.toRadians(270)){
-                            car.y = 0-(car.height*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
+                            car.y = -(car.width+25)*j;
+                            double speed = randomVelocity(yTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             yTraffic[i].remove(car);
                             yTraffic[i].add(car);
                         }
@@ -296,20 +317,24 @@ public class CrashPanel extends JPanel implements ActionListener{
                     }
                     for(int j=0; j<xTraffic[i].size(); j++){
                         Car car = xTraffic[i].get(j);
-                        yellowLight(car, j);
+                        yellowLight(car, xTraffic[i]);
                         applyMotion(car);
                         if(car.x<0 && car.angle == Math.toRadians(180)){
                             car.x = getWidth()+(car.width*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
-                            xTraffic[i].remove(car);
+                            double speed = randomVelocity(xTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             xTraffic[i].add(car);
+                            xTraffic[i].remove(car);
                         }else if(car.x+car.width/2>getWidth() && car.angle == Math.toRadians(0)){
                             car.x = 0-(car.width*2+25)*j;
-                            car.velocity = Math.random()+1;
-                            car.targetVelocity = car.velocity;
-                            xTraffic[i].remove(car);
+                            double speed = randomVelocity(xTraffic[i]);
+                            car.velocity = speed;
+                            car.targetVelocity = speed;
+                            car.color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
                             xTraffic[i].add(car);
+                            xTraffic[i].remove(car);
                         }
                         car.updateRectangle();
                         Car colliding = isColliding(car);
@@ -328,18 +353,27 @@ public class CrashPanel extends JPanel implements ActionListener{
 
     @Override
     protected void paintComponent(Graphics g){
+        // 1 VGreen - 2 VYellow - 3HGreen - 4 HYellow
         Graphics2D g2d = (Graphics2D) g;
-        g.setColor(Color.green);
+        g.setColor(new Color(0,154,23));
         g2d.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.gray);
         g2d.fillRect(getWidth()/2-lanes*laneWidth, 0, lanes*laneWidth*2, getHeight());
         g2d.fillRect(0, getHeight()/2-lanes*laneWidth, getWidth(), lanes*laneWidth*2);
-        g2d.setColor(Color.red);
+        g2d.setColor(trafficLight==1?Color.green:trafficLight==2?Color.yellow:Color.red);
+        g2d.fillRect(getWidth()/2-lanes*laneWidth+20, getHeight()/2-lanes*laneWidth-20, laneWidth*lanes*2-40, 20);
+        g2d.fillRect(getWidth()/2-lanes*laneWidth+20, getHeight()/2+lanes*laneWidth+20, laneWidth*lanes*2-40, 20);
+        g2d.setColor(trafficLight==3?Color.green:trafficLight==4?Color.yellow:Color.red);
+        g2d.fillRect(getWidth()/2-lanes*laneWidth-20, getHeight()/2-lanes*laneWidth+20, 20, laneWidth*lanes*2-40);
+        g2d.fillRect(getWidth()/2+lanes*laneWidth, getHeight()/2-lanes*laneWidth+20, 20, laneWidth*lanes*2-40);
+        
         for(int i=0; i<lanes*2; i++){
             for (Car car : xTraffic[i]) {
+                g2d.setColor(car.color);
                 g2d.fillPolygon(car.rect);
             }
             for (Car car : yTraffic[i]) {
+                g2d.setColor(car.color);
                 g2d.fillPolygon(car.rect);
             }
         }

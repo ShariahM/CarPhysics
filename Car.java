@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Polygon;
 public class Car {
     double velocity = 0;
@@ -12,6 +13,7 @@ public class Car {
     double y = 0;
     double height = 50;
     double width = 100;
+    Color color = new Color((float)Math.random(),(float)Math.random(),(float)Math.random());
     public Car(double x, double y, double angle, double velocity){
         this.x = x;
         this.y = y;
