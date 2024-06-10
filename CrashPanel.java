@@ -20,8 +20,9 @@ public class CrashPanel extends JPanel implements ActionListener{
     ArrayList<Car>[] xTraffic = new ArrayList[lanes*2]; 
     Polygon intersectionPolygon = new Polygon();
     int movementTick = 5;
+    int lightDuration = 2500;
     Timer movementTimer = new Timer(movementTick, this);
-    Timer trafficTimer = new Timer(2500, this);
+    Timer trafficTimer = new Timer(lightDuration, this);
     Car carCollidedA;
     Car carCollidedB;
 
@@ -40,7 +41,7 @@ public class CrashPanel extends JPanel implements ActionListener{
         if (lane.size() == 0){
             return speed;
         }else{
-            return Math.min(lane.getLast().targetVelocity, speed);
+            return Math.min(lane.get(lane.size()-1).targetVelocity, speed);
         }
     }
 
@@ -80,10 +81,9 @@ public class CrashPanel extends JPanel implements ActionListener{
             if(car.x<getWidth()/2-laneWidth*lanes-(car.width+25)*index-25 && car.x>getWidth()/2-laneWidth*lanes-(car.width+25)*(index+1)){
                 car.velocity = 0;
             }else if(!car.rect.getBounds2D().createIntersection(intersectionPolygon.getBounds2D()).isEmpty()){
-                System.out.println("intersection!");
                 lane.remove(car);
                 lane.add(car);
-                car.velocity = car.targetVelocity*1.5;
+                car.velocity = car.targetVelocity*1.25;
             }else{
                 car.velocity = car.targetVelocity;
             }
@@ -92,7 +92,9 @@ public class CrashPanel extends JPanel implements ActionListener{
             if(car.x>getWidth()/2+laneWidth*lanes+(car.width+25)*index+25 && car.x<getWidth()/2+laneWidth*lanes+(car.width+25)*(index+1)){
                 car.velocity = 0;
             }else if(!car.rect.getBounds2D().createIntersection(intersectionPolygon.getBounds2D()).isEmpty()){
-                car.velocity = car.targetVelocity*1.5;
+                lane.remove(car);
+                lane.add(car);
+                car.velocity = car.targetVelocity*1.25;
             }else{
                 car.velocity = car.targetVelocity;
             }
@@ -101,7 +103,9 @@ public class CrashPanel extends JPanel implements ActionListener{
             if(car.y>getHeight()/2+laneWidth*lanes+(car.width+25)*index+25 && car.y<getHeight()/2+laneWidth*lanes+(car.width+25)*(index+1)){
                 car.velocity = 0;
             }else if(!car.rect.getBounds2D().createIntersection(intersectionPolygon.getBounds2D()).isEmpty()){
-                car.velocity = car.targetVelocity*1.5;
+                lane.remove(car);
+                lane.add(car);
+                car.velocity = car.targetVelocity*1.25;
             }else{
                 car.velocity = car.targetVelocity;
             }
@@ -110,7 +114,9 @@ public class CrashPanel extends JPanel implements ActionListener{
             if(car.y<getHeight()/2-laneWidth*lanes-(car.width+25)*index-25 && car.y>getHeight()/2-laneWidth*lanes-(car.width+25)*(index+1)){
                 car.velocity = 0;
             }else if(!car.rect.getBounds2D().createIntersection(intersectionPolygon.getBounds2D()).isEmpty()){
-                car.velocity = car.targetVelocity*1.5;
+                lane.remove(car);
+                lane.add(car);
+                car.velocity = car.targetVelocity*1.25;
             }else{
                 car.velocity = car.targetVelocity;
             }
@@ -379,4 +385,3 @@ public class CrashPanel extends JPanel implements ActionListener{
         }
     }
 }
-
