@@ -10,10 +10,9 @@ import javax.swing.Timer;
 import javax.swing.JPanel;
 
 public class CrashPanel extends JPanel implements ActionListener{
-    int lanes = 2;
     int laneWidth = 75;
-    int xTrafficLevel = 1;
-    int yTrafficLevel = 1;
+    int lanes = 2;
+    int trafficLevel = 1;
     int trafficLight = 1; // 1 VGreen - 2 VYellow - 3HGreen - 4 HYellow
     int speedLimit = 3;
     ArrayList<Car>[] yTraffic = new ArrayList[lanes*2]; 
@@ -45,16 +44,26 @@ public class CrashPanel extends JPanel implements ActionListener{
         }
     }
 
+    public void launch(int lanes, int lightDuration, int trafficLevel){
+        reset();
+        this.lanes = lanes;
+        this.lightDuration = lightDuration;
+        this.trafficLevel = trafficLevel; 
+        addCars();
+    }
+
     public void addCars(){
-        for(int i = 0; i<lanes*2;i++){
-            boolean negative = i<lanes;
-            for(int j = 0; j<yTrafficLevel; j++){
-                
+        yTraffic = new ArrayList[lanes*2]; 
+        xTraffic = new ArrayList[lanes*2]; 
+        for(int i = 0; i < lanes*2; i++) { 
+            yTraffic[i] = new ArrayList<Car>(); 
+            xTraffic[i] = new ArrayList<Car>(); 
+        } 
+        for(int j = 0; j<trafficLevel;j++){
+            int i = j%(lanes-1);
+            boolean negative = i<lanes;  
                 yTraffic[i].add(new Car(getWidth()/2-laneWidth*lanes+laneWidth*i+laneWidth/2, negative?-125*yTraffic[i].size():getHeight()+yTraffic[i].size()*125, Math.toRadians(negative?270:90), randomVelocity(yTraffic[i])));
-            }
-            for(int j = 0; j<xTrafficLevel; j++){
                 xTraffic[i].add(new Car(!negative?-125*xTraffic[i].size():getWidth()+125*xTraffic[i].size(), getHeight()/2-laneWidth*lanes+laneWidth*i+laneWidth/2, Math.toRadians(negative?180:0), randomVelocity(xTraffic[i])));
-            }
         }
     }
     public void reset(){
@@ -172,14 +181,14 @@ public class CrashPanel extends JPanel implements ActionListener{
     public void actionPerformed(ActionEvent e){
         Object source = e.getSource();
         if(source == movementTimer){
-            if(carCollidedA != null  && carCollidedB != null){
-                applyMotion(carCollidedA);
-                applyMotion(carCollidedB);
-                carCollidedA.updateRectangle();
-                carCollidedB.updateRectangle();
-                repaint();
-                return;
-            }
+            // if(carCollidedA != null  && carCollidedB != null){
+            //     applyMotion(carCollidedA);
+            //     applyMotion(carCollidedB);
+            //     carCollidedA.updateRectangle();
+            //     carCollidedB.updateRectangle();
+            //     repaint();
+            //     return;
+            // }
             for(int i=0; i<lanes*2; i++){
                 if(trafficLight == 1){
                     for(int j=0; j<yTraffic[i].size(); j++){
@@ -360,6 +369,11 @@ public class CrashPanel extends JPanel implements ActionListener{
     @Override
     protected void paintComponent(Graphics g){
         // 1 VGreen - 2 VYellow - 3HGreen - 4 HYellow
+        intersectionPolygon.reset();
+        intersectionPolygon.addPoint(getWidth()/2-laneWidth*lanes, getHeight()/2-laneWidth*lanes);
+        intersectionPolygon.addPoint(getWidth()/2+laneWidth*lanes, getHeight()/2-laneWidth*lanes);
+        intersectionPolygon.addPoint(getWidth()/2+laneWidth*lanes, getHeight()/2+laneWidth*lanes);
+        intersectionPolygon.addPoint(getWidth()/2-laneWidth*lanes, getHeight()/2+laneWidth*lanes);
         Graphics2D g2d = (Graphics2D) g;
         g.setColor(new Color(0,154,23));
         g2d.fillRect(0, 0, getWidth(), getHeight());
