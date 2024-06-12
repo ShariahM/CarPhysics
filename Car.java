@@ -24,7 +24,7 @@ public class Car {
         updateRectangle();
     }
     public void updateRectangle(){
-        double angle = this.angle+Math.PI;
+        double angle = this.angle;
         rect.reset();
         double[] xPoints = new double[4];
         double[] yPoints = new double[4];
