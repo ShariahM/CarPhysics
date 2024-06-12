@@ -23,8 +23,7 @@ public class CrashPanel extends JPanel implements ActionListener{
     int lightDuration = 2500;
     Timer movementTimer = new Timer(movementTick, this);
     Timer trafficTimer = new Timer(lightDuration, this);
-    Car carCollidedA;
-    Car carCollidedB;
+    boolean collided = false;
 
 
     public CrashPanel(){
@@ -73,8 +72,7 @@ public class CrashPanel extends JPanel implements ActionListener{
         }
     }
     public void reset(){
-        carCollidedA = null;
-        carCollidedB = null;
+        collided = false;
         for(int i = 0; i < lanes*2; i++) { 
             yTraffic[i].clear();
             xTraffic[i].clear();
@@ -181,10 +179,11 @@ public class CrashPanel extends JPanel implements ActionListener{
 
         carB.velocity = Math.sqrt(Math.pow(vFBy, 2) + Math.pow(vFBx, 2));
         carB.angle = Math.atan2(vFBy, vFBx); 
-        carCollidedB = carB;
-        carCollidedA = carA;
-        carCollidedA.updateRectangle();
-        carCollidedB.updateRectangle();
+        carA.collided = true;
+        carB.collided = true;
+        collided = true;
+        carA.updateRectangle();
+        carB.updateRectangle();
         movementTimer.stop();
         trafficTimer.stop();
         repaint();
@@ -350,22 +349,18 @@ public class CrashPanel extends JPanel implements ActionListener{
         g2d.fillRect(getWidth()/2+lanes*laneWidth, getHeight()/2-lanes*laneWidth+20, 20, laneWidth*lanes*2-40);
         for(int i=0; i<lanes*2; i++){
             for (Car car : xTraffic[i]) {
-                if(carCollidedA != null && carCollidedB != null){
-                    if(car != carCollidedA && car != carCollidedB){
+                if(!car.collided && collided){
                         float average = (car.color.getRGBComponents(null)[0]+car.color.getRGBComponents(null)[1]+car.color.getRGBComponents(null)[2])/3;
                         car.color = new Color(average,average,average);
-                    }
                 }   
                 g2d.setColor(car.color);
                 g2d.fillPolygon(car.rect);
             }
             for (Car car : yTraffic[i]) {
-                if(carCollidedA != null && carCollidedB != null){
-                    if(car != carCollidedA && car != carCollidedB){
-                        float average = (car.color.getRGBComponents(null)[0]+car.color.getRGBComponents(null)[1]+car.color.getRGBComponents(null)[2])/3;
-                        car.color = new Color(average,average,average);
-                    }
-                }   
+                if(!car.collided && collided){
+                    float average = (car.color.getRGBComponents(null)[0]+car.color.getRGBComponents(null)[1]+car.color.getRGBComponents(null)[2])/3;
+                    car.color = new Color(average,average,average);
+                }     
                 g2d.setColor(car.color);
                 g2d.fillPolygon(car.rect);
             }

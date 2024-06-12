@@ -25,7 +25,7 @@ public class CrashMain implements ActionListener{
     }
     public void actionPerformed(ActionEvent e){
         if (e.getSource() == InputPanel.launch){
-            carPane.launch(Integer.parseInt(InputPanel.lanes.getText()), Integer.parseInt(InputPanel.lightDuration.getText())*1000, Integer.parseInt(InputPanel.trafficLevel.getText()), Integer.parseInt(InputPanel.speedLimit.getText()));
+            carPane.launch(Integer.parseInt(InputPanel.lanes.getText()), Integer.parseInt(InputPanel.lightDuration.getText())*1000, Integer.parseInt(InputPanel.trafficLevel.getText()), Integer.parseInt(InputPanel.speedLimit.getText())/10);
         }else if(e.getSource() == InputPanel.reset){
             carPane.reset();
         }

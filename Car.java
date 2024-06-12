@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Polygon;
 public class Car {
+    public boolean collided = false;
     double velocity = 0;
     double targetVelocity = 0;
     double angularVelocity = 0;
