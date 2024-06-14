@@ -15,7 +15,7 @@ public class CrashMain implements ActionListener{
      * It also makes an instructional messagebox to show up.
      * The main method simply creates an instance of CrashMain (basically runs the application)
      */
-    public JFrame frame = new JFrame();
+    public JFrame frame = new JFrame("Traffic Physics");
     public CrashPanel carPane = new CrashPanel();
     public static InputPanel input = new InputPanel();
     public CrashMain(){
@@ -40,14 +40,14 @@ public class CrashMain implements ActionListener{
      * # of Lanes - 2
      * Light Duration (s) - 5s
      * # of Cars - 4
-     * Speed Limit (km/h) - 1 (in reality this is 10 km/h, it's just scaled)
+     * Speed Limit (km/h) - 30 km/h
      */
     public void actionPerformed(ActionEvent e){
         if (e.getSource() == InputPanel.launch){
             int lanes = !InputPanel.lanes.getText().equals("")?Integer.parseInt(InputPanel.lanes.getText()):2;
             int lightDuration = !InputPanel.lightDuration.getText().equals("")?Integer.parseInt(InputPanel.lightDuration.getText()):5;
             int trafficLevel = !InputPanel.trafficLevel.getText().equals("")?Integer.parseInt(InputPanel.trafficLevel.getText()):4;
-            int speedLimit = !InputPanel.speedLimit.getText().equals("")?Integer.parseInt(InputPanel.speedLimit.getText()):1;
+            int speedLimit = !InputPanel.speedLimit.getText().equals("")?Integer.parseInt(InputPanel.speedLimit.getText()):30;
             carPane.launch(lanes, lightDuration*1000, trafficLevel, speedLimit/10);
         }
     }

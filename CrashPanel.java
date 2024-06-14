@@ -1,9 +1,11 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import javax.swing.Timer;
@@ -70,13 +72,16 @@ public class CrashPanel extends JPanel implements ActionListener{
     /*
      * launch method resets everything and sends a new wave of traffic with a new configuration
      * This method is called in the CrashMain, it takes the values from the user's input
+     * If any value doesn't make sense (0 cars, 0 lanes or lanes > 4, 0 light duration), set a fallback value
      */
     public void launch(int lanes, int lightDuration, int trafficLevel, int speedLimit){
-        trafficTimer.setDelay(lightDuration);
+        this.lanes = Math.min(Math.max(1, lanes), 4);
+        this.lightDuration = Math.max(1000, lightDuration);
+        this.trafficLevel = Math.max(1, trafficLevel); 
+        this.speedLimit = speedLimit;
+        trafficTimer.setDelay(this.lightDuration);
+        trafficTimer.setInitialDelay(this.lightDuration);
         reset();
-        this.lanes = lanes;
-        this.lightDuration = lightDuration;
-        this.trafficLevel = trafficLevel; 
         addCars();
     }
 
@@ -137,9 +142,11 @@ public class CrashPanel extends JPanel implements ActionListener{
         shownMessage = false;
         CrashMain.input.averageForce = 0;
         CrashMain.input.averageForceLabel.setText("Average Force: 0N");
-        for(int i = 0; i < lanes*2; i++) { 
-            yTraffic[i].clear();
-            xTraffic[i].clear();
+        for(ArrayList<Car> lane : yTraffic) { 
+            lane.clear();
+        } 
+        for(ArrayList<Car> lane : xTraffic) { 
+            lane.clear();
         } 
         movementTimer.restart();
         trafficTimer.restart();
@@ -248,7 +255,7 @@ public class CrashPanel extends JPanel implements ActionListener{
         grayscaleCars();
         repaint();
         if(!shownMessage){
-            String message = "Cars directly affected by collisions are flashing.\nCars are shown with final angles.\nMost forms of crashes can be avoided by reducing congestion.\nSome steps to take include:\nMore lanes\nMedium speed limit (40-60kmh)\nLonger yellow light duration.";
+            String message = "Cars directly affected by collisions are flashing.\nCars are shown with final angles.\nAverage Impact Force is updated. Crash is lethal at 90,000N+\nMost forms of crashes can be avoided by reducing congestion.\nSome steps to take include:\nMore lanes\nMedium speed limit (40-60kmh)\nLonger yellow light duration.";
             JOptionPane.showMessageDialog(null, message, "Crash Detected!", JOptionPane.INFORMATION_MESSAGE);
             shownMessage = true;
         }
@@ -368,10 +375,22 @@ public class CrashPanel extends JPanel implements ActionListener{
             for (Car car : xTraffic[i]) {
                 g2d.setColor(car.color);
                 g2d.fillPolygon(car.rect);
+                g2d.setFont(new Font("Big Font",Font.PLAIN, 30));
+                g2d.setColor(car.color.darker());
+                AffineTransform orig = g2d.getTransform();
+                g2d.rotate(car.angle, car.x, car.y);
+                g2d.drawString("→",(int)car.x-g2d.getFontMetrics().stringWidth("→")/2, (int)car.y+g2d.getFontMetrics().getHeight()/4);
+                g2d.setTransform(orig);
             }
             for (Car car : yTraffic[i]) {
                 g2d.setColor(car.color);
                 g2d.fillPolygon(car.rect);
+                g2d.setFont(new Font("Big Font",Font.PLAIN, 30));
+                g2d.setColor(car.color.darker());
+                AffineTransform orig = g2d.getTransform();
+                g2d.rotate(car.angle, car.x, car.y);
+                g2d.drawString("←",(int)car.x-g2d.getFontMetrics().stringWidth("←")/2, (int)car.y+g2d.getFontMetrics().getHeight()/4);
+                g2d.setTransform(orig);
             }
         }
         
